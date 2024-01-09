@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Prepare Directories') {
+            steps {
+                sh 'mkdir -p /opt/bulkUpload/dev/$jobid'
+                sh 'mkdir -p /opt/bulkUpload/dev/$jobid/TENOVOS_DATA'
+            }
+        }
+         stage('Copy Data from GCP Storage') {
+            steps {
+                sh 'gsutil -m cp -r gs://bkt-isca-devsecops-test/bulkUpload/dev/$jobid/* /opt/bulkUpload/dev/$jobid/TENOVOS_DATA/'
+            }
+        } 
+        stage('Copy Data from Local') {
+            steps {
+                sh 'cp -r /home/devsecops/TENOVOS_DATA/* /opt/bulkUpload/dev/$jobid/TENOVOS_DATA/' 
+                sh 'cp -r /home/devsecops/target /opt/bulkUpload/dev/$jobid/target'
+            }
+        }
+        
+        stage('Move ') {
+            steps {
+                sh 'mv -v /opt/bulkUpload/dev/$jobid/TENOVOS_DATA/Tenovos_Datasheet.xlsx /opt/bulkUpload/dev/$jobid/target/classes/data/'
+             
+            }
+        } 
+        
+            stage('Run Jar') {
+            steps {
+                 dir("/opt/bulkUpload/dev/${jobid}/target/") {
+                   sh 'java -jar /opt/bulkUpload/dev/$jobid/target/Tenovos-jar-with-dependencies.jar'
+                }
+                  
+            }
+        }
+        
+    }
+}
